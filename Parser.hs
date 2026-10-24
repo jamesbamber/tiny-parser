@@ -1,14 +1,25 @@
-import Control.Monad (MonadPlus (..))
+import Control.Applicative (Alternative (empty, (<|>)))
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
+instance Functor Parser where
+    fmap f p = do
+        a <- p
+        pure (f a)
+
+instance Applicative Parser where
+    pure = result
+    p <*> q = do
+        f <- p
+        a <- q
+        pure (f a)
+
 instance Monad Parser where
     (>>=) = bind
-    return = result
 
-instance MonadPlus Parser where
-    mzero = zero
-    mplus = plus
+instance Alternative Parser where
+    empty = zero
+    (<|>) = plus
 
 -- primitive parsers
 result :: a -> Parser a
@@ -53,14 +64,14 @@ p `plus` q = Parser $ \inp -> parse p inp ++ parse q inp
 
 -- parsers using plus
 letter :: Parser Char
-letter = lower `plus` upper
+letter = lower <|> upper
 
 alphanum :: Parser Char
-alphanum = letter `plus` digit
+alphanum = letter <|> digit
 
 -- accepts strings of only letters
 word :: Parser String
-word = neWord `plus` result ""
+word = neWord <|> result ""
   where
     neWord = do
         x  <- letter
@@ -70,7 +81,7 @@ word = neWord `plus` result ""
 -- parser many items of type p
 
 many :: Parser a -> Parser [a]
-many p = manyList `plus` result []
+many p = manyList <|> result []
   where
     manyList = do
         x  <- p
