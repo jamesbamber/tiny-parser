@@ -31,15 +31,23 @@ exprLevel n = do
 atom :: Parser Int
 atom = parenthesized expr <|> integer
 
+
+
 op :: Int -> Parser (Int  -> Int -> Int)
-op 2 = do
-    c <- (char '+' <|> char '-')
-    case c of
-        '+' -> pure (+)
-        '-' -> pure (-)
-op 1 = do
-    c <- (char '*' <|> char '/')
-    case c of
-        '*' -> pure (*)
-        '/' -> pure div
+op 2 = addition <|> subtraction
+    where
+        addition = do
+            char '+'
+            pure (+)
+        subtraction = do
+            char '-'
+            pure (-)
+op 1 = multiplication <|> division
+    where
+        multiplication = do
+            char '*'
+            pure (*)
+        division = do
+            char '/'
+            pure div
 op _ = empty
