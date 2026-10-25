@@ -1,18 +1,38 @@
+module Parser (
+    Parser (..),
+    result,
+    zero,
+    item,
+    bind,
+    sat,
+    char,
+    digit,
+    upper,
+    lower,
+    plus,
+    letter,
+    alphanum,
+    word,
+    many,
+    integer,
+    parenthesized,
+) where
+
 import Control.Applicative (Alternative (empty, (<|>)))
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
 instance Functor Parser where
-    fmap f p = do
-        a <- p
-        pure (f a)
+    fmap f p = 
+        p `bind` \a -> 
+            result (f a)
 
 instance Applicative Parser where
     pure = result
-    p <*> q = do
-        f <- p
-        a <- q
-        pure (f a)
+    p <*> q = 
+        p `bind` \f -> 
+            q `bind` \a -> 
+                pure (f a)
 
 instance Monad Parser where
     (>>=) = bind
@@ -60,7 +80,13 @@ lower = sat $ \x -> 'a' <= x && x <= 'z'
 
 -- choice operator plus (genius)
 plus :: Parser a -> Parser a -> Parser a
-p `plus` q = Parser $ \inp -> parse p inp ++ parse q inp
+p `plus` q = Parser $ \inp -> 
+    case (parse p inp) of
+        []  -> parse q inp
+        res -> res
+
+-- alternative nondeterministic plus (caused exponential complexity)
+-- p `plus` q = Parser $ \inp -> parse p inp ++ parse q inp
 
 -- parsers using plus
 letter :: Parser Char
@@ -88,3 +114,15 @@ many p = manyList <|> result []
         xs <- (many p)
         result (x : xs)
                         
+integer :: Parser Int
+integer = do
+    digits <- many digit
+    pure (read digits :: Int)
+
+-- wraps a parser in parenthesises
+parenthesized :: Parser a -> Parser a
+parenthesized p = do
+    _ <- char '('
+    x <- p
+    _ <- char ')'
+    pure x
