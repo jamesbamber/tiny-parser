@@ -9,6 +9,7 @@ module Parser (
     digit,
     upper,
     lower,
+    whitespace,
     plus,
     letter,
     alphanum,
@@ -16,9 +17,12 @@ module Parser (
     many,
     integer,
     parenthesized,
+    escape,
 ) where
 
 import Control.Applicative (Alternative (empty, (<|>)))
+import Data.Char (isSpace)
+import Text.XHtml (white)
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -78,6 +82,9 @@ upper = sat $ \x -> 'A' <= x && x <= 'Z'
 lower :: Parser Char
 lower = sat $ \x -> 'a' <= x && x <= 'z'
 
+whitespace :: Parser Char
+whitespace = sat $ isSpace
+
 -- choice operator plus (genius)
 plus :: Parser a -> Parser a -> Parser a
 p `plus` q = Parser $ \inp -> 
@@ -119,10 +126,15 @@ integer = do
     digits <- many digit
     pure (read digits :: Int)
 
--- wraps a parser in parenthesises
+-- wraps a parser in parentheses (esacping any whitespace)
 parenthesized :: Parser a -> Parser a
 parenthesized p = do
-    _ <- char '('
-    x <- p
-    _ <- char ')'
+    _ <- escape $ char '('
+    x <- escape p
+    _ <- escape $ char ')'
     pure x
+
+escape :: Parser a -> Parser a
+escape p = do
+    many whitespace
+    p

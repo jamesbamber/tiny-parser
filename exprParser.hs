@@ -13,7 +13,7 @@ import Control.Applicative (Alternative (empty, (<|>)))
 -- to avoid left recursion in parsing expr = expr op expr 
 -- we view it as expr = atom (many (op atom)) and then foldl
 
-highestLevel = 2
+highestLevel = 3
 
 expr :: Parser Int
 expr = exprLevel highestLevel
@@ -29,25 +29,28 @@ exprLevel n = do
     pure $ foldl (\acc (f, y) -> f acc y) x fxs
 
 atom :: Parser Int
-atom = parenthesized expr <|> integer
-
-
+atom = parenthesized expr <|> escape integer
 
 op :: Int -> Parser (Int  -> Int -> Int)
-op 2 = addition <|> subtraction
+op 3 = addition <|> subtraction
     where
         addition = do
-            char '+'
+            escape $ char '+'
             pure (+)
         subtraction = do
-            char '-'
+            escape $ char '-'
             pure (-)
-op 1 = multiplication <|> division
+op 2 = multiplication <|> division
     where
         multiplication = do
-            char '*'
+            escape $ char '*'
             pure (*)
         division = do
-            char '/'
+            escape $ char '/'
             pure div
+op 1 = exponentiation
+    where
+        exponentiation = do
+            escape $ char '^'
+            pure (^)
 op _ = empty
