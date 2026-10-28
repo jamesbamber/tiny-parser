@@ -22,7 +22,6 @@ module Parser (
 
 import Control.Applicative (Alternative (empty, (<|>)))
 import Data.Char (isSpace)
-import Text.XHtml (white)
 
 newtype Parser a = Parser { parse :: String -> [(a, String)] }
 
@@ -130,7 +129,7 @@ integer = do
 parenthesized :: Parser a -> Parser a
 parenthesized p = do
     _ <- escape $ char '('
-    x <- escape p
+    x <- p
     _ <- escape $ char ')'
     pure x
 

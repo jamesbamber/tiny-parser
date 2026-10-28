@@ -29,7 +29,7 @@ exprLevel n = do
     pure $ foldl (\acc (f, y) -> f acc y) x fxs
 
 atom :: Parser Int
-atom = parenthesized expr <|> escape integer
+atom = parenthesized (escape expr) <|> escape integer
 
 op :: Int -> Parser (Int  -> Int -> Int)
 op 3 = addition <|> subtraction
