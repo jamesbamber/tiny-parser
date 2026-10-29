@@ -1,5 +1,5 @@
-import Parser
 import Control.Applicative (Alternative (empty, (<|>)))
+import Parser
 
 maxLevel = 3
 
@@ -9,12 +9,12 @@ expr = exprLevel 0
 exprLevel :: Int -> Parser Int
 exprLevel n
     | n == maxLevel = atom
-    | otherwise     = exprLevel (n+1) `chainl1` op (n)
+    | otherwise = exprLevel (n + 1) `chainl1` op (n)
 
 atom :: Parser Int
 atom = parenthesized (escape expr) <|> escape int
 
-op :: Int -> Parser (Int  -> Int -> Int)
+op :: Int -> Parser (Int -> Int -> Int)
 op 0 = addition <|> subtraction
   where
     addition = do

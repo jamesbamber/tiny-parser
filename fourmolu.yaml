@@ -1,0 +1,5 @@
+# Uses standard Fourmolu defaults
+indentation: 4
+comma-style: leading
+column-limit: 80
+function-arrows: trailing

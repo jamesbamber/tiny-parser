@@ -23,24 +23,26 @@ module Parser (
     chainl,
     chainl1,
     chainr,
-    chainr1
+    chainr1,
+    ident,
+    ints,
 ) where
 
 import Control.Applicative (Alternative (empty, (<|>)))
 import Data.Char (isSpace)
 
-newtype Parser a = Parser { parse :: String -> [(a, String)] }
+newtype Parser a = Parser {parse :: String -> [(a, String)]}
 
 instance Functor Parser where
-    fmap f p = 
-        p `bind` \a -> 
+    fmap f p =
+        p `bind` \a ->
             result (f a)
 
 instance Applicative Parser where
     pure = result
-    p <*> q = 
-        p `bind` \f -> 
-            q `bind` \a -> 
+    p <*> q =
+        p `bind` \f ->
+            q `bind` \a ->
                 pure (f a)
 
 instance Monad Parser where
@@ -55,7 +57,7 @@ result :: a -> Parser a
 result v = Parser $ \inp -> [(v, inp)]
 
 zero :: Parser a
-zero = Parser $ \inp -> []
+zero = Parser $ \_ -> []
 
 item :: Parser Char
 item = Parser $ \inp -> case inp of
@@ -69,9 +71,9 @@ p `bind` f = Parser $ \inp -> concat [parse (f v) inp' | (v, inp') <- parse p in
 -- simple parsers
 sat :: (Char -> Bool) -> Parser Char
 sat p = do
-    x <- item 
-    if p x 
-        then result x 
+    x <- item
+    if p x
+        then result x
         else zero
 
 -- some nice parsers using sat
@@ -92,9 +94,9 @@ whitespace = sat $ isSpace
 
 -- choice operator plus (genius)
 plus :: Parser a -> Parser a -> Parser a
-p `plus` q = Parser $ \inp -> 
+p `plus` q = Parser $ \inp ->
     case (parse p inp) of
-        []  -> parse q inp
+        [] -> parse q inp
         res -> res
 
 -- alternative nondeterministic plus (caused exponential complexity)
@@ -112,7 +114,7 @@ word :: Parser String
 word = neWord <|> pure ""
   where
     neWord = do
-        x  <- letter
+        x <- letter
         xs <- word
         pure (x : xs)
 
@@ -122,14 +124,14 @@ many :: Parser a -> Parser [a]
 many p = manyList <|> pure []
   where
     manyList = do
-        x  <- p
+        x <- p
         xs <- (many p)
         pure (x : xs)
-                        
+
 -- parsers at least 1 item of type p
 some :: Parser a -> Parser [a]
 some p = do
-    x  <- p
+    x <- p
     xs <- (many p)
     pure (x : xs)
 
@@ -144,9 +146,9 @@ nat = do
 -- integer
 int :: Parser Int
 int = negative <|> nat
-  where 
+  where
     negative = do
-        char '-'
+        _ <- char '-'
         n <- nat
         pure (-n)
 
@@ -167,7 +169,7 @@ parenthesized p = do
 
 escape :: Parser a -> Parser a
 escape p = do
-    many whitespace
+    _ <- many whitespace
     p
 
 -- now we start cooking
@@ -181,10 +183,9 @@ sepby1 :: Parser a -> Parser b -> Parser [a]
 p `sepby1` sep = do
     x <- p
     xs <- many $ do
-        sep
+        _ <- sep
         p
     pure (x : xs)
-
 
 -- parses left associative operator chains, if empty returns v
 chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
@@ -198,7 +199,7 @@ p `chainl1` op = do
         f <- op
         y <- p
         pure (f, y)
-    pure $ foldl(\acc (f, y) -> f acc y) x fys
+    pure $ foldl (\acc (f, y) -> f acc y) x fys
 
 -- parses right associative operator chains, if empty returns v
 chainr :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
@@ -209,19 +210,18 @@ chainr1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainr1` op = do
     x <- p
     rest x <|> pure x
-      where 
-        rest x = do
-            f  <- op
-            xs <- p `chainr1` op
-            pure $ f x xs
-
+  where
+    rest x = do
+        f <- op
+        xs <- p `chainr1` op
+        pure $ f x xs
 
 -- useful parsers
 
 -- parses a list of integers separated by comma [1 ,5 ,6]
 ints :: Parser [Int]
 ints = do
-    char '['
+    _ <- char '['
     xs <- sepby1 (escape int) (char ',')
-    escape (char ']')
+    _ <- escape (char ']')
     pure xs

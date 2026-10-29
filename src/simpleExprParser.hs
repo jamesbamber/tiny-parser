@@ -7,14 +7,14 @@ import Control.Applicative (Alternative (empty, (<|>)))
 -- atom = ( expr ) | integer
 -- op = (+) | (-)
 
--- to avoid left recursion in parsing expr = expr op Exor 
+-- to avoid left recursion in parsing expr = expr op Exor
 -- we view it as expr = atom (many (op atom)) and then fold
 
 expr :: Parser Int
 expr = exprOpExpr <|> atom
-  where 
+  where
     exprOpExpr = do
-        x   <- atom
+        x <- atom
         fxs <- many $ do
             f <- op
             y <- atom
@@ -24,7 +24,7 @@ expr = exprOpExpr <|> atom
 atom :: Parser Int
 atom = parenthesized expr <|> int
 
-op :: Parser (Int  -> Int -> Int)
+op :: Parser (Int -> Int -> Int)
 op = do
     c <- (char '+' <|> char '-')
     case c of
