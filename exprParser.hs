@@ -4,7 +4,7 @@ import Control.Applicative (Alternative (empty, (<|>)))
 
 -- BNF grammar for expr parser
 -- expr n = (expr n-1) op (expr n-1) | expr
--- atom = ( expr ) | integer
+-- atom = ( expr ) | int
 
 -- in this case
 -- op 2  = (+) | (-)
@@ -29,7 +29,7 @@ exprLevel n = do
     pure $ foldl (\acc (f, y) -> f acc y) x fxs
 
 atom :: Parser Int
-atom = parenthesized (escape expr) <|> escape integer
+atom = parenthesized (escape expr) <|> escape int
 
 op :: Int -> Parser (Int  -> Int -> Int)
 op 3 = addition <|> subtraction
