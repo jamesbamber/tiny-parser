@@ -18,6 +18,12 @@ module Parser (
     int,
     parenthesized,
     escape,
+    sepby,
+    sepby1,
+    chainl,
+    chainl1,
+    chainr,
+    chainr1
 ) where
 
 import Control.Applicative (Alternative (empty, (<|>)))
@@ -138,11 +144,11 @@ nat = do
 -- integer
 int :: Parser Int
 int = negative <|> nat
-    where 
-        negative = do
-            char '-'
-            n <- nat
-            pure (-n)
+  where 
+    negative = do
+        char '-'
+        n <- nat
+        pure (-n)
 
 -- reads an identifier
 ident :: Parser String

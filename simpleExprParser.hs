@@ -12,17 +12,17 @@ import Control.Applicative (Alternative (empty, (<|>)))
 
 expr :: Parser Int
 expr = exprOpExpr <|> atom
-    where 
-        exprOpExpr = do
-            x   <- atom
-            fxs <- many $ do
-                f <- op
-                y <- atom
-                pure (f, y)
-            pure $ foldl (\acc (f, y) -> f acc y) x fxs
+  where 
+    exprOpExpr = do
+        x   <- atom
+        fxs <- many $ do
+            f <- op
+            y <- atom
+            pure (f, y)
+        pure $ foldl (\acc (f, y) -> f acc y) x fxs
 
 atom :: Parser Int
-atom = parenthesized expr <|> integer
+atom = parenthesized expr <|> int
 
 op :: Parser (Int  -> Int -> Int)
 op = do
