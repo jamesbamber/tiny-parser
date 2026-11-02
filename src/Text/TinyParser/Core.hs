@@ -4,6 +4,7 @@ module Text.TinyParser.Core (
     zero,
     item,
     bind,
+    runParser,
 ) where
 
 import Control.Applicative (Alternative (empty, (<|>)))
@@ -54,3 +55,10 @@ p `plus` q = Parser $ \inp ->
 
 -- alternative nondeterministic plus (caused exponential complexity)
 -- p `plus` q = Parser $ \inp -> parse p inp ++ parse q inp
+
+-- function to run the parser
+runParser :: Parser a -> String -> Either String a
+runParser p inp = case (parse p inp) of
+    [] -> Left "ERROR: Parser Failed"
+    (_ : []) -> Left "ERROR: Parser didn't consume all input"
+    (x : _) -> Right $ fst x
