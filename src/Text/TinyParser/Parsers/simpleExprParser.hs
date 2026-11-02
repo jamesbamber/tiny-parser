@@ -1,4 +1,4 @@
-import Parser
+import Text.TinyParser.Core
 
 import Control.Applicative (Alternative (empty, (<|>)))
 

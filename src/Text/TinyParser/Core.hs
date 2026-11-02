@@ -1,4 +1,4 @@
-module Parser (
+module Text.TinyParser.Core (
     Parser (..),
     result,
     zero,
@@ -119,7 +119,6 @@ word = neWord <|> pure ""
         pure (x : xs)
 
 -- parser many items of type p
-
 many :: Parser a -> Parser [a]
 many p = manyList <|> pure []
   where

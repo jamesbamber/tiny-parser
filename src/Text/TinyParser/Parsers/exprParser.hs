@@ -1,5 +1,6 @@
+import Text.TinyParser.Core
+
 import Control.Applicative (Alternative (empty, (<|>)))
-import Parser
 
 maxLevel = 3
 
