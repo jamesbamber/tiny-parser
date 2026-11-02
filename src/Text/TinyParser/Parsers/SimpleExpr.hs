@@ -1,3 +1,7 @@
+module Text.TinyParser.Parsers.SimpleExpr where
+
+import Text.TinyParser.Char
+import Text.TinyParser.Combinators
 import Text.TinyParser.Core
 
 import Control.Applicative (Alternative (empty, (<|>)))
@@ -30,3 +34,4 @@ op = do
     case c of
         '+' -> pure (+)
         '-' -> pure (-)
+        _ -> empty
