@@ -76,7 +76,7 @@ int = negative <|> nat
 -- reads an identifier
 ident :: Parser String
 ident = do
-    x <- lower
+    x <- letter
     xs <- many alphanum
     pure (x : xs)
 
