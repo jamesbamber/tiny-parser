@@ -60,5 +60,5 @@ p `plus` q = Parser $ \inp ->
 runParser :: Parser a -> String -> Either String a
 runParser p inp = case (parse p inp) of
     [] -> Left "ERROR: Parser Failed"
-    (_ : []) -> Left "ERROR: Parser didn't consume all input"
-    (x : _) -> Right $ fst x
+    ((x, "") : []) -> Right x
+    _ -> Left "ERROR: Parser didn't consume all input"
